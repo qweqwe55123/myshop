@@ -1,0 +1,67 @@
+/* --- Reset & base --- */
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,"Noto Sans TC","Microsoft JhengHei",sans-serif;
+  color: #0f172a; background: #f8fafc; line-height: 1.6;
+}
+
+/* --- Theme tokens --- */
+:root{
+  --brand: #f59e0b;        /* 主色（橘） */
+  --brand-ink: #7c2d12;    /* 深橘字色 */
+  --ink: #0f172a;          /* 主要字色 */
+  --muted: #64748b;        /* 次要字色 */
+  --card: #ffffff;         /* 卡片底色 */
+  --ring: #e2e8f0;         /* 邊框 */
+  --shadow: 0 10px 25px rgba(2, 6, 23, .05);
+}
+
+/* --- Layout helpers --- */
+.container { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+.section { padding: 56px 0; }
+.center { text-align: center; }
+
+/* --- Buttons --- */
+.btn {
+  display: inline-block; padding: 12px 20px; border-radius: 12px;
+  border: 0; cursor: pointer; font-weight: 700; letter-spacing: .2px;
+}
+.btn-primary { background: var(--brand); color: #fff; }
+.btn-primary:hover { filter: brightness(0.95); }
+.btn-ghost { background: #fff; color: var(--brand-ink); border: 1px solid var(--ring); }
+
+/* --- Hero --- */
+.hero {
+  background: linear-gradient(180deg, #fff, #fff7ed);
+  padding: 72px 0 56px;
+  border-bottom: 1px solid var(--ring);
+}
+.hero h1 { font-size: clamp(28px, 4vw, 44px); margin: 0 0 10px; }
+.hero p  { color: var(--muted); margin: 0 0 18px; }
+
+/* --- Grid / Cards --- */
+.grid { display: grid; gap: 18px; }
+.grid-2 { grid-template-columns: repeat(2, minmax(0,1fr)); }
+.grid-3 { grid-template-columns: repeat(3, minmax(0,1fr)); }
+@media (max-width: 900px){ .grid-3 { grid-template-columns: 1fr; } }
+@media (max-width: 720px){ .grid-2 { grid-template-columns: 1fr; } }
+
+.card {
+  background: var(--card); border: 1px solid var(--ring);
+  border-radius: 16px; padding: 20px; box-shadow: var(--shadow);
+}
+.card h3 { margin: 6px 0 8px; font-size: 20px; }
+.card p { margin: 0; color: var(--muted); }
+
+/* --- Price card --- */
+.price { font-size: 32px; font-weight: 800; color: var(--ink); margin: 6px 0 10px; }
+.badge { display: inline-block; font-size: 12px; padding: 4px 8px; border-radius: 999px; background: #fff; border:1px solid var(--ring); color: var(--muted); }
+
+/* --- Image --- */
+.hero-img {
+  width: 100%; max-width: 520px; border-radius: 18px; border: 1px solid var(--ring); box-shadow: var(--shadow);
+}
+
+/* --- Footer --- */
+footer { padding: 28px 0; color: var(--muted); border-top: 1px solid var(--ring); background: #fff; }
