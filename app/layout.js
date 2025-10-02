@@ -1,4 +1,4 @@
-export const metadata = { title: "MyShop", description: "簡潔好用的生活小物" };
+export const metadata = { title: "Yunho Studio", description: "Less is more." };
 
 import "./globals.css";
 
@@ -13,14 +13,20 @@ export default function RootLayout({ children }) {
           </div>
         </div>
 
-        {/* 黏頂導覽列 */}
+        {/* 黏頂導覽列：僅首頁 */}
         <header className="sticky top-0 z-50 bg-white/80 backdrop-blur border-b border-slate-200">
-          <nav className="max-w-[1200px] mx-auto px-4 py-3 flex items-center gap-6">
-            <a href="/" className="text-xl font-extrabold tracking-tight">MyShop</a>
-            <div className="ml-auto flex items-center gap-4">
-              <a href="/" className="text-slate-600 hover:text-slate-900 transition">首頁</a>
-              <a href="/products" className="text-slate-600 hover:text-slate-900 transition">商品</a>
-            </div>
+          <nav className="max-w-[1200px] mx-auto px-4 py-3 flex items-center">
+            <a href="/" className="flex items-center gap-3">
+              <img
+                src="/logo-yunho-studio.png"
+                alt="Yunho Studio"
+                className="h-8 w-auto"
+              />
+              {/* 若想只顯示圖形可把文字註解掉 */}
+              <span className="sr-only">Yunho Studio</span>
+            </a>
+            {/* 右側留白，保留極簡 */}
+            <div className="ml-auto" />
           </nav>
         </header>
 
@@ -29,8 +35,8 @@ export default function RootLayout({ children }) {
         <footer className="border-t border-slate-200 mt-20 bg-white">
           <div className="max-w-[1200px] mx-auto px-4 py-10 text-sm text-slate-500">
             <div className="flex justify-between flex-col md:flex-row gap-4">
-              <span>© {new Date().getFullYear()} MyShop</span>
-              <span className="text-slate-400">極簡現代 · 生活小物</span>
+              <span>© {new Date().getFullYear()} Yunho Studio</span>
+              <span className="text-slate-400">Minimal · Modern</span>
             </div>
           </div>
         </footer>
