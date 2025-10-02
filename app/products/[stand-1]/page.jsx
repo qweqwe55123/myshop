@@ -1,8 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 
-/** 你可以把這個 DB 改成從後端/檔案載入 */
+// 關閉快取（避免部署後看舊頁面）
+export const revalidate = 0;
+export const dynamic = "force-dynamic";
+
+// 商品資料
 const DB = {
   "stand-1": {
     id: "stand-1",
@@ -21,48 +25,37 @@ const DB = {
   },
 };
 
-/** 只用 React 做的畫廊（主圖 + 縮圖列 + 小圓點 + 全螢幕檢視） */
+// 👉 別名（slug）對照，全部指到同一個商品
+const ALIAS = {
+  "stand-1": "stand-1",
+  "minimal-stand": "stand-1",
+  "phone-stand": "stand-1",
+  "stand": "stand-1",
+};
+
 function Gallery({ images = [], alt = "" }) {
   const [index, setIndex] = useState(0);
   const [open, setOpen] = useState(false);
-  const thumbsRef = useRef(null);
-
-  // 讓目前的縮圖自動捲到可視範圍
-  useEffect(() => {
-    const el = thumbsRef.current?.querySelector(`[data-i="${index}"]`);
-    el?.scrollIntoView({ inline: "center", behavior: "smooth", block: "nearest" });
-  }, [index]);
 
   const prev = () => setIndex((i) => (i - 1 + images.length) % images.length);
   const next = () => setIndex((i) => (i + 1) % images.length);
 
   return (
     <div className="w-full">
-      {/* 主圖區：4:3 比例，點擊可全螢幕 */}
       <div
         className="overflow-hidden rounded-2xl border border-slate-200 cursor-zoom-in"
         onClick={() => setOpen(true)}
         title="點擊放大"
       >
         <div className="aspect-[4/3] w-full bg-slate-100">
-          <img
-            src={images[index]}
-            alt={alt}
-            className="h-full w-full object-cover"
-            loading="eager"
-          />
+          <img src={images[index]} alt={alt} className="h-full w-full object-cover" />
         </div>
       </div>
 
-      {/* 縮圖列（可水平滑動） */}
-      <div
-        ref={thumbsRef}
-        className="mt-4 flex gap-3 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-      >
+      <div className="mt-4 flex gap-3 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {images.map((src, i) => (
           <button
             key={src}
-            data-i={i}
             onClick={() => setIndex(i)}
             className={`shrink-0 h-20 w-20 rounded-xl overflow-hidden border transition
               ${i === index ? "border-slate-900" : "border-slate-200 hover:border-slate-400"}`}
@@ -73,12 +66,10 @@ function Gallery({ images = [], alt = "" }) {
         ))}
       </div>
 
-      {/* 小圓點指示器 */}
       <div className="mt-3 flex items-center justify-center gap-2">
         {images.map((_, i) => (
           <button
             key={i}
-            aria-label={`切換到第 ${i + 1} 張`}
             onClick={() => setIndex(i)}
             className={`h-2.5 w-2.5 rounded-full transition
               ${i === index ? "bg-slate-900" : "bg-slate-300 hover:bg-slate-400"}`}
@@ -86,13 +77,11 @@ function Gallery({ images = [], alt = "" }) {
         ))}
       </div>
 
-      {/* 全螢幕檢視（無外掛） */}
       {open && (
         <div
           className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center"
           onClick={() => setOpen(false)}
         >
-          {/* 關閉鍵 */}
           <button
             className="absolute right-5 top-5 text-white text-2xl"
             onClick={() => setOpen(false)}
@@ -101,13 +90,9 @@ function Gallery({ images = [], alt = "" }) {
             ✕
           </button>
 
-          {/* 左右切換 */}
           <button
             className="absolute left-4 md:left-8 text-white text-4xl select-none"
-            onClick={(e) => {
-              e.stopPropagation();
-              prev();
-            }}
+            onClick={(e) => { e.stopPropagation(); prev(); }}
             aria-label="上一張"
           >
             ‹
@@ -122,10 +107,7 @@ function Gallery({ images = [], alt = "" }) {
 
           <button
             className="absolute right-4 md:right-8 text-white text-4xl select-none"
-            onClick={(e) => {
-              e.stopPropagation();
-              next();
-            }}
+            onClick={(e) => { e.stopPropagation(); next(); }}
             aria-label="下一張"
           >
             ›
@@ -137,28 +119,29 @@ function Gallery({ images = [], alt = "" }) {
 }
 
 export default function ProductDetail({ params }) {
-  const p = DB[params.id];
+  const raw = decodeURIComponent(params.id || "");
+  const key = ALIAS[raw] || raw;     // 先用 alias 對照，找不到就用原值
+  const p = DB[key];
 
   if (!p) {
     return (
-      <main className="max-w-[1200px] mx-auto px-4 py-12">找不到商品</main>
+      <main className="max-w-[1200px] mx-auto px-4 py-12">
+        找不到商品（ID: <code className="bg-slate-100 px-2 py-1 rounded">{raw}</code>）
+      </main>
     );
   }
 
   return (
     <main className="max-w-[1200px] mx-auto px-4 py-12 grid gap-10 md:grid-cols-2">
-      {/* 左：畫廊（主圖 + 縮圖 + 小圓點 + 全螢幕） */}
       <section>
         <Gallery images={p.images} alt={p.name} />
       </section>
 
-      {/* 右：商品資訊 + 加入購物車（保留你原本的區塊） */}
       <section>
         <h1 className="text-2xl font-bold">{p.name}</h1>
         <div className="mt-2 text-rose-600 text-3xl font-extrabold">${p.price}</div>
         <p className="mt-4 text-slate-600 leading-7">{p.description}</p>
 
-        {/* 這裡就是你原本的加入購物車那些 */}
         <div className="mt-6 flex items-center gap-3">
           <div className="inline-flex items-center rounded-xl border px-3 py-2">
             <button className="px-2 text-lg">-</button>
