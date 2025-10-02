@@ -5,7 +5,7 @@ const PRODUCT = {
   id: "stand-1",
   name: "手機支架 · Minimal Stand",
   price: 299,
-  img: "/products/stand-1/1.jpg", // ← 確認這張存在
+  img: "/products/stand-1/1.jpg",
   tagline: "極簡設計｜穩固不晃",
 };
 
@@ -19,7 +19,7 @@ export default function ProductsPage() {
       <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7">
         <article className="group bg-white border border-slate-200 rounded-3xl p-4 shadow-sm hover:shadow-lg transition">
           <Link href={`/products/${p.id}`} className="block overflow-hidden rounded-2xl">
-            {/* 縮圖（固定比例）。想要正方形可把 aspect-[4/3] 改成 aspect-square */}
+            {/* 縮圖：固定比例 */}
             <div className="aspect-[4/3] w-full">
               <img
                 src={p.img}

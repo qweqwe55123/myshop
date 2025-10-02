@@ -3,10 +3,7 @@
 
 import { useState } from "react";
 import Lightbox from "yet-another-react-lightbox";
-import Zoom from "yet-another-react-lightbox/plugins/zoom";
-import Thumbnails from "yet-another-react-lightbox/plugins/thumbnails";
 import "yet-another-react-lightbox/styles.css";
-import "yet-another-react-lightbox/plugins/thumbnails.css";
 
 const DB = {
   "stand-1": {
@@ -39,9 +36,9 @@ export default function ProductDetail({ params }) {
 
   return (
     <main className="max-w-[1200px] mx-auto px-4 py-12 grid gap-10 md:grid-cols-2">
-      {/* 左：圖片區 */}
+      {/* 左：圖片 */}
       <section>
-        {/* 主圖（固定比例縮圖，點擊開燈箱） */}
+        {/* 主圖（固定比例，點擊開燈箱） */}
         <div
           className="overflow-hidden rounded-2xl border border-slate-200 cursor-zoom-in"
           onClick={() => setOpen(true)}
@@ -69,15 +66,12 @@ export default function ProductDetail({ params }) {
           ))}
         </div>
 
-        {/* Lightbox（放大檢視 + 縮圖 + 縮放） */}
+        {/* Lightbox（放大檢視，可左右切換） */}
         <Lightbox
           open={open}
           close={() => setOpen(false)}
           index={index}
           slides={p.images.map((src) => ({ src }))}
-          plugins={[Zoom, Thumbnails]}
-          zoom={{ maxZoomPixelRatio: 3, zoomInMultiplier: 1.3 }}
-          thumbnails={{ position: "bottom" }}
           on={{ view: ({ index: i }) => setIndex(i) }}
         />
       </section>
