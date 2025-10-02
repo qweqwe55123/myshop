@@ -1,43 +1,20 @@
-"use client";
-
 export default function Home() {
-  const goProducts = () => location.assign("/products");
-
   return (
-    <main>
-      <section className="hero">
-        <div className="container" style={{textAlign:"center"}}>
-          <span className="badge">每日手工 · 低糖不膩</span>
-          <h1>手工堅果塔｜新鮮出爐的好味道</h1>
-          <p>嚴選天然堅果，低溫烘焙，焦糖香而不膩。精美包裝，送禮自用兩相宜。</p>
-          <div style={{display:"flex", gap:12, justifyContent:"center", flexWrap:"wrap"}}>
-            <button className="btn btn-primary" onClick={goProducts}>逛逛商品</button>
-            <a className="btn btn-ghost" href="#faq">看看常見問題</a>
-          </div>
-          <div style={{marginTop:24}}>
-            <img className="hero-img" src="/nuts.jpg" alt="手工堅果塔" />
-          </div>
-        </div>
-      </section>
+    <main className="min-h-screen bg-gray-50 flex flex-col items-center justify-center">
+      {/* 網站標題 */}
+      <h1 className="text-4xl font-extrabold text-amber-600 mb-6">
+        歡迎來到我的商店 🛍️
+      </h1>
 
-      <section id="faq" className="section">
-        <div className="container grid grid-2">
-          <div className="card">
-            <h3>保存方式</h3>
-            <p>建議冷藏保存；常溫不超過 2 天。冷藏 7 天、冷凍 21 天。</p>
-          </div>
-          <div className="card">
-            <h3>配送方式</h3>
-            <p>黑貓低溫宅配。滿千免運。客服：example@gmail.com</p>
-          </div>
-        </div>
-      </section>
+      {/* Tailwind 測試框 */}
+      <div className="bg-amber-100 text-amber-900 p-6 rounded-xl shadow-md mb-6">
+        這是 Tailwind 測試：有看到淡橘背景、圓角、陰影嗎？
+      </div>
 
-      <footer className="center">
-        <div className="container">
-          <small>© {new Date().getFullYear()} Nuts Studio</small>
-        </div>
-      </footer>
+      {/* 測試按鈕 */}
+      <button className="px-6 py-3 bg-amber-500 text-white font-semibold rounded-lg hover:bg-amber-600 transition">
+        點我測試按鈕
+      </button>
     </main>
   );
 }

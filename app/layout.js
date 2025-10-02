@@ -1,3 +1,4 @@
+import "./globals.css";
 export const metadata = { title: "Nuts Studio", description: "手工堅果塔商店" };
 
 export default function RootLayout({ children }) {
