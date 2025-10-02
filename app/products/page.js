@@ -1,3 +1,6 @@
+export const revalidate = 0;
+export const dynamic = 'force-dynamic';
+
 // app/products/page.jsx
 import Link from "next/link";
 
