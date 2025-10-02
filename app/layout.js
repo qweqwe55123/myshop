@@ -1,18 +1,32 @@
+export const metadata = { title: "MyShop", description: "簡潔好用的生活小物" };
+
 import "./globals.css";
-export const metadata = { title: "Nuts Studio", description: "手工堅果塔商店" };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="zh-Hant">
-      <body>
-        <header style={{borderBottom:"1px solid #e2e8f0", background:"#fff"}}>
-          <nav style={{maxWidth:1100, margin:"0 auto", padding:"14px 16px", display:"flex", gap:16, alignItems:"center"}}>
-            <a href="/" style={{fontWeight:800, color:"#0f172a", textDecoration:"none"}}>Nuts Studio</a>
-            <a href="/products" style={{color:"#0f172a", textDecoration:"none"}}>商品目錄</a>
-            <a href="/#faq" style={{marginLeft:"auto", color:"#0f172a", textDecoration:"none"}}>常見問題</a>
+      <body className="bg-gray-50 text-slate-900">
+        {/* 公告列 */}
+        <div className="w-full bg-black text-white text-center text-sm py-2">
+          待新增｜公告與活動
+        </div>
+
+        {/* 導覽列 */}
+        <header className="bg-white border-b border-slate-200">
+          <nav className="max-w-[1100px] mx-auto px-4 py-3 flex items-center gap-6">
+            <a href="/" className="font-extrabold tracking-wide">MyShop</a>
+            <a href="/" className="text-slate-700 hover:text-black">首頁</a>
+            <a href="/products" className="text-slate-700 hover:text-black">商品</a>
           </nav>
         </header>
+
         {children}
+
+        <footer className="border-t border-slate-200 mt-16 bg-white">
+          <div className="max-w-[1100px] mx-auto px-4 py-6 text-sm text-slate-500">
+            © {new Date().getFullYear()} MyShop · All rights reserved.
+          </div>
+        </footer>
       </body>
     </html>
   );
