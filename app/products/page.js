@@ -5,7 +5,7 @@ const PRODUCT = {
   id: "stand-1",
   name: "手機支架 · Minimal Stand",
   price: 299,
-  img: "/products/stand-1/1.jpg", // ← 這張一定要存在 public/products/stand-1/1.jpg
+  img: "/products/stand-1/1.jpg", // ← 確認這張存在
   tagline: "極簡設計｜穩固不晃",
 };
 
@@ -19,12 +19,15 @@ export default function ProductsPage() {
       <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7">
         <article className="group bg-white border border-slate-200 rounded-3xl p-4 shadow-sm hover:shadow-lg transition">
           <Link href={`/products/${p.id}`} className="block overflow-hidden rounded-2xl">
-            {/* 用原生 <img> 最不會出錯；注意 src 一定要以 / 開頭 */}
-            <img
-              src={p.img}
-              alt={p.name}
-              className="w-full h-64 object-cover group-hover:scale-[1.02] transition"
-            />
+            {/* 縮圖（固定比例）。想要正方形可把 aspect-[4/3] 改成 aspect-square */}
+            <div className="aspect-[4/3] w-full">
+              <img
+                src={p.img}
+                alt={p.name}
+                className="h-full w-full object-cover group-hover:scale-[1.02] transition"
+                loading="lazy"
+              />
+            </div>
           </Link>
 
           <Link href={`/products/${p.id}`}>
