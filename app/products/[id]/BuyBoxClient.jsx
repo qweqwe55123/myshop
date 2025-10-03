@@ -1,6 +1,6 @@
 "use client";
 
-import { useCart } from "../components/CartProvider";
+import { useCart } from "../../components/CartProvider";
 
 export default function BuyBoxClient({ product }) {
   const { addToCart } = useCart();
