@@ -1,6 +1,6 @@
 import "./globals.css";
 import Link from "next/link";
-import { CartProvider } from "./components/CartProvider";
+import Providers from "./providers";
 import CartButton from "./components/CartButton";
 
 export const metadata = { title: "Shop", description: "Demo" };
@@ -9,7 +9,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="zh-Hant">
       <body className="min-h-screen bg-slate-50 text-slate-900">
-        <CartProvider>
+        <Providers>
           <header className="sticky top-0 z-10 bg-white border-b border-slate-200">
             <div className="mx-auto max-w-6xl px-4 h-14 flex items-center justify-between">
               <Link href="/" className="font-semibold">My Shop</Link>
@@ -20,7 +20,7 @@ export default function RootLayout({ children }) {
             </div>
           </header>
           <main className="mx-auto max-w-6xl px-4 py-6">{children}</main>
-        </CartProvider>
+        </Providers>
       </body>
     </html>
   );
