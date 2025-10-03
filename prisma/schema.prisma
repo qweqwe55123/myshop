@@ -1,0 +1,45 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = env("PRISMA_DB_PROVIDER") // 可不設；預設從 URL 推斷
+  url      = env("DATABASE_URL")
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  CANCELLED
+}
+
+model Order {
+  id          String      @id @default(cuid())
+  orderNo     String      @unique
+  createdAt   DateTime    @default(now())
+  status      OrderStatus @default(PENDING)
+
+  // 客戶資訊（先放在同表）
+  customerName  String?
+  customerPhone String?
+  customerEmail String?
+  note          String?
+
+  subTotal   Int
+  shipping   Int
+  total      Int
+
+  items      OrderItem[]
+}
+
+model OrderItem {
+  id        String @id @default(cuid())
+  order     Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId   String
+
+  productId String
+  name      String
+  price     Int     // 單價（NTD）
+  qty       Int
+  image     String?
+}
