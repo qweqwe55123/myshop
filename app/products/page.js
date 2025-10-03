@@ -1,6 +1,5 @@
-// app/products/page.jsx
 import Link from "next/link";
-import { products } from "../data/products";
+import { products } from "../data/products"; // 共用商品資料
 
 export default function ProductsPage() {
   return (
@@ -8,7 +7,7 @@ export default function ProductsPage() {
       {products.map((product) => {
         const cover =
           product.cover ||
-          (product.images && product.images[2]) || // 第3張（純產品）
+          (product.images && product.images[2]) || // 優先第3張
           (product.images && product.images[0]) || // 沒有就第1張
           "/placeholder.png";
 
@@ -16,21 +15,22 @@ export default function ProductsPage() {
           <Link
             key={product.id}
             href={`/products/${product.id}`}
-            className="rounded-2xl border border-slate-200 overflow-hidden hover:shadow-lg transition"
+            className="group rounded-2xl border border-slate-200 bg-white overflow-hidden hover:shadow-xl transition"
           >
             {/* 圖片容器：固定比例 + 不裁切 */}
-            <div className="aspect-[4/3] w-full bg-white flex items-center justify-center p-3">
+            <div className="aspect-[4/3] w-full flex items-center justify-center bg-slate-50">
               <img
                 src={cover}
                 alt={product.name}
-                className="max-h-full max-w-full object-contain"
+                className="max-h-full max-w-full object-contain group-hover:scale-105 transition"
                 loading="lazy"
               />
             </div>
 
-            <div className="p-4 space-y-1">
+            {/* 商品資訊 */}
+            <div className="p-4">
               <h2 className="font-semibold text-slate-900">{product.name}</h2>
-              <p className="text-slate-600">NT$ {product.price}</p>
+              <p className="text-slate-600 mt-1">NT$ {product.price}</p>
             </div>
           </Link>
         );

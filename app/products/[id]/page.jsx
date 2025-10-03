@@ -1,10 +1,7 @@
-// app/products/[id]/page.jsx
-export const revalidate = 0;
-export const dynamic = "force-dynamic";
-
 import GalleryClient from "./GalleryClient";
 import BuyBoxClient from "./BuyBoxClient";
 import { products } from "../../data/products";
+import { CartProvider } from "../../components/CartProvider";
 
 export default function Page({ params }) {
   const id = params.id;
@@ -15,12 +12,11 @@ export default function Page({ params }) {
   }
 
   return (
-    <div className="grid md:grid-cols-2 gap-8">
-      {/* 左側圖片 */}
-      <GalleryClient images={product.images} />
-
-      {/* 右側資訊與加入購物車 */}
-      <BuyBoxClient product={product} />
-    </div>
+    <CartProvider>
+      <div className="grid md:grid-cols-2 gap-8">
+        <GalleryClient images={product.images} />
+        <BuyBoxClient product={product} />
+      </div>
+    </CartProvider>
   );
 }

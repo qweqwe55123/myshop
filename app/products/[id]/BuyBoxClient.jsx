@@ -1,48 +1,17 @@
-// app/products/[id]/BuyBoxClient.jsx
 "use client";
 
-import { useState } from "react";
-import { addToCart } from "../../lib/cart"; // ← 放在 app/lib/cart.js 的寫法
+import { useCart } from "../components/CartProvider";
 
 export default function BuyBoxClient({ product }) {
-  const [qty, setQty] = useState(1);
-
-  const onAdd = () => {
-    addToCart({
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      qty,
-    });
-    alert("已加入購物車");
-  };
+  const { addToCart } = useCart();
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="p-6 space-y-4 border rounded-xl">
       <h1 className="text-2xl font-bold">{product.name}</h1>
-      <div className="mt-2 text-rose-600 text-3xl font-bold">
-        ${product.price}
-      </div>
-
-      <div className="mt-4 flex items-center gap-2">
-        <button
-          onClick={() => setQty(Math.max(1, qty - 1))}
-          className="px-3 py-1 border rounded"
-        >
-          -
-        </button>
-        <span>{qty}</span>
-        <button
-          onClick={() => setQty(qty + 1)}
-          className="px-3 py-1 border rounded"
-        >
-          +
-        </button>
-      </div>
-
+      <p className="text-lg text-slate-600">NT$ {product.price}</p>
       <button
-        onClick={onAdd}
-        className="mt-4 bg-black text-white px-4 py-2 rounded"
+        onClick={() => addToCart(product)}
+        className="w-full bg-black text-white py-3 rounded-lg font-semibold hover:bg-slate-800 transition"
       >
         加入購物車
       </button>
