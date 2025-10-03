@@ -11,7 +11,7 @@ export default function RootLayout({ children }) {
     <html lang="zh-Hant">
       <body className="min-h-screen bg-slate-50 text-slate-900">
         <CartProvider>
-          {/* 頂部導覽（含購物車按鈕） */}
+          {/* 頂部導覽 */}
           <header className="sticky top-0 z-10 bg-white border-b border-slate-200">
             <div className="mx-auto max-w-6xl px-4 h-14 flex items-center justify-between">
               <Link href="/" className="font-semibold">My Shop</Link>
@@ -22,7 +22,7 @@ export default function RootLayout({ children }) {
             </div>
           </header>
 
-          {/* ★ children 必須在 CartProvider 裡 */}
+          {/* 主要內容 */}
           <main className="mx-auto max-w-6xl px-4 py-6">
             {children}
           </main>
