@@ -7,15 +7,13 @@ const CartContext = createContext(null);
 export function CartProvider({ children }) {
   const [items, setItems] = useState([]);
 
-  // 初始化讀取 localStorage
+  // 讀取 / 寫入 localStorage（避免刷新遺失）
   useEffect(() => {
     try {
       const raw = localStorage.getItem("cart");
       if (raw) setItems(JSON.parse(raw));
     } catch {}
   }, []);
-
-  // 寫入 localStorage
   useEffect(() => {
     try {
       localStorage.setItem("cart", JSON.stringify(items));
@@ -23,28 +21,22 @@ export function CartProvider({ children }) {
   }, [items]);
 
   const addToCart = (p, qty = 1) => {
+    const n = Math.max(1, Number(qty) || 1);
     setItems(prev => {
       const i = prev.findIndex(x => x.id === p.id);
       if (i >= 0) {
         const next = [...prev];
-        next[i] = { ...next[i], qty: (next[i].qty || 0) + qty };
+        next[i] = { ...next[i], qty: (next[i].qty || 0) + n };
         return next;
       }
-      return [...prev, { ...p, qty }];
+      return [...prev, { ...p, qty: n }];
     });
   };
 
-  const removeFromCart = (id) =>
-    setItems(prev => prev.filter(x => x.id !== id));
-
+  const removeFromCart = (id) => setItems(prev => prev.filter(x => x.id !== id));
   const clearCart = () => setItems([]);
 
-  const value = useMemo(() => ({
-    items,
-    addToCart,
-    removeFromCart,
-    clearCart
-  }), [items]);
+  const value = useMemo(() => ({ items, addToCart, removeFromCart, clearCart }), [items]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }
