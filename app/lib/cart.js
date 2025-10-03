@@ -1,27 +1,15 @@
-// lib/cart.js
-export function getCart() {
-  if (typeof window === "undefined") return [];
-  try {
-    return JSON.parse(localStorage.getItem("cart") || "[]");
-  } catch {
-    return [];
-  }
-}
-
-export function setCart(cart) {
-  if (typeof window === "undefined") return;
-  localStorage.setItem("cart", JSON.stringify(cart));
-}
-
+// app/lib/cart.js
 export function addToCart(item) {
-  // item: {id, name, price, qty}
-  const cart = getCart();
-  const i = cart.findIndex((x) => x.id === item.id);
-  if (i >= 0) {
-    cart[i].qty += item.qty;
+  if (typeof window === "undefined") return;
+
+  const KEY = "cart";
+  const cart = JSON.parse(localStorage.getItem(KEY) || "[]");
+
+  const idx = cart.findIndex((i) => i.id === item.id);
+  if (idx > -1) {
+    cart[idx].qty += item.qty;
   } else {
     cart.push(item);
   }
-  setCart(cart);
-  return cart;
+  localStorage.setItem(KEY, JSON.stringify(cart));
 }

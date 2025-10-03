@@ -1,10 +1,11 @@
-// app/products/[id]/page.jsx  （Server Component）
-export const revalidate = 0;         // 伺服器端設定，允許即時
+// app/products/[id]/page.jsx
+export const revalidate = 0;
 export const dynamic = "force-dynamic";
 
 import GalleryClient from "./GalleryClient";
 import BuyBoxClient from "./BuyBoxClient";
 
+// 這裡我放一個最小 DB，先確保找得到資料
 const DB = {
   "stand-1": {
     id: "stand-1",
@@ -19,35 +20,25 @@ const DB = {
       "/products/stand-1/6.jpg",
     ],
     description:
-      "極簡設計，鋁合金材質，穩固不晃，適合桌面使用。防滑止滑、多角度調整。",
+      "極簡設計，鋁合金材質，穩固不晃，適合桌面使用。矽膠止滑，多角度調整。",
   },
 };
 
 export default function Page({ params }) {
-  const p = DB[params.id];
+  const id = params.id;
+  const product = DB[id];
 
-  if (!p) {
-    return (
-      <main className="max-w-[1200px] mx-auto px-4 py-12">
-        <div className="rounded-xl border p-8">
-          <h1 className="text-xl font-semibold">找不到這個商品</h1>
-          <p className="text-slate-600 mt-2">請回到商品列表再試一次。</p>
-        </div>
-      </main>
-    );
+  if (!product) {
+    return <div className="p-8">找不到商品</div>;
   }
 
   return (
-    <main className="max-w-[1200px] mx-auto px-4 py-12 grid gap-10 md:grid-cols-2">
-      {/* 左邊：圖片區（不裁切、可切換縮圖） */}
-      <section>
-        <GalleryClient images={p.images} alt={p.name} />
-      </section>
+    <div className="grid md:grid-cols-2 gap-8">
+      {/* 左側圖片（你自己的 GalleryClient 已經可以縮圖 + 點放大） */}
+      <GalleryClient images={product.images} />
 
-      {/* 右邊：購買區（數量 + 加入購物車） */}
-      <section>
-        <BuyBoxClient product={p} />
-      </section>
-    </main>
+      {/* 右側資訊與加入購物車 */}
+      <BuyBoxClient product={product} />
+    </div>
   );
 }
