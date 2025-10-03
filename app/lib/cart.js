@@ -1,17 +1,27 @@
 // lib/cart.js
-export function addToCart(product) {
-  // 先從 localStorage 抓現有的購物車
-  let cart = JSON.parse(localStorage.getItem("cart")) || [];
-
-  // 檢查是否已經存在相同商品
-  const existing = cart.find((item) => item.id === product.id);
-  if (existing) {
-    existing.quantity += 1;
-  } else {
-    cart.push({ ...product, quantity: 1 });
+export function getCart() {
+  if (typeof window === "undefined") return [];
+  try {
+    return JSON.parse(localStorage.getItem("cart") || "[]");
+  } catch {
+    return [];
   }
+}
 
-  // 存回 localStorage
+export function setCart(cart) {
+  if (typeof window === "undefined") return;
   localStorage.setItem("cart", JSON.stringify(cart));
-  alert("已加入購物車！");
+}
+
+export function addToCart(item) {
+  // item: {id, name, price, qty}
+  const cart = getCart();
+  const i = cart.findIndex((x) => x.id === item.id);
+  if (i >= 0) {
+    cart[i].qty += item.qty;
+  } else {
+    cart.push(item);
+  }
+  setCart(cart);
+  return cart;
 }

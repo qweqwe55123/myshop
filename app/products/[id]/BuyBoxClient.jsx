@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { addToCart } from "@/lib/cart";
+import { addToCart } from "../../../lib/cart";
 
 export default function BuyBoxClient({ product }) {
   const [qty, setQty] = useState(1);
