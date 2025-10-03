@@ -27,10 +27,10 @@ export default function ProductsPage() {
             </div>
 
             {/* 下半部黑框區塊 */}
-            <div className="p-4 border-t-2 border-black">
-              <h2 className="font-semibold text-slate-900">{product.name}</h2>
-              <p className="text-slate-600 mt-1">NT$ {product.price}</p>
-            </div>
+            <div className="p-4 bg-black">
+  <h2 className="font-semibold text-white">{product.name}</h2>
+  <p className="text-gray-200 mt-1">NT$ {product.price}</p>
+</div>
           </Link>
         );
       })}

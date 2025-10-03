@@ -22,7 +22,10 @@ export default function RootLayout({ children }) {
             </div>
           </header>
 
-          <main className="mx-auto max-w-6xl px-4 py-6">{children}</main>
+          {/* ★ children 必須在 CartProvider 裡 */}
+          <main className="mx-auto max-w-6xl px-4 py-6">
+            {children}
+          </main>
         </CartProvider>
       </body>
     </html>
