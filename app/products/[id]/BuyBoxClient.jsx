@@ -16,7 +16,6 @@ export default function BuyBoxClient({ product }) {
       <h1 className="text-2xl font-bold">{product.name}</h1>
       <p className="text-lg text-slate-600">NT$ {product.price}</p>
 
-      {/* 數量控制 */}
       <div className="flex items-center gap-3">
         <button onClick={sub} className="w-9 h-9 border rounded-lg">-</button>
         <input
