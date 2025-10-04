@@ -3,8 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider = env("PRISMA_DB_PROVIDER") // 可不設；預設從 URL 推斷
-  url      = env("DATABASE_URL")
+  provider = "sqlite"           // ← 這裡一定是字串，不能用 env()
+  url      = env("DATABASE_URL") // 從 .env 讀連線字串
 }
 
 enum OrderStatus {
