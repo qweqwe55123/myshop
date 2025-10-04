@@ -4,12 +4,18 @@ import { prisma } from "../../lib/prisma";
 
 export async function GET() {
   try {
-    // 打 DB 做最小查詢
-    const r = await prisma.$queryRaw`SELECT 1 as ok`;
-    return new Response(JSON.stringify({ ok: true, r }), { status: 200 });
+    const who = await prisma.$queryRaw`select current_user`;
+    const reg = await prisma.$queryRawUnsafe(
+      `select to_regclass('public."Order"') as exists`
+    );
+    return Response.json({
+      ok: true,
+      user: who?.[0]?.current_user,
+      orderTable: reg?.[0]?.exists,
+    });
   } catch (e) {
-    return new Response(
-      JSON.stringify({ ok: false, error: String(e), stack: e?.stack }),
+    return Response.json(
+      { ok: false, error: e?.message ?? String(e) },
       { status: 500 }
     );
   }

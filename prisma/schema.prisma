@@ -4,8 +4,10 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url      = env("POSTGRES_PRISMA_URL")  // 或改成 env("DATABASE_URL")，二選一
 }
+
+/* 如果你已經有 models 就保留；沒有就用這份 */
 enum OrderStatus {
   PENDING
   PAID
@@ -13,22 +15,21 @@ enum OrderStatus {
 }
 
 model Order {
-  id          String      @id @default(cuid())
-  orderNo     String      @unique
-  createdAt   DateTime    @default(now())
-  status      OrderStatus @default(PENDING)
+  id            String      @id @default(cuid())
+  orderNo       String      @unique
+  createdAt     DateTime    @default(now())
+  status        OrderStatus @default(PENDING)
 
-  // 客戶資訊（先放在同表）
   customerName  String?
   customerPhone String?
   customerEmail String?
   note          String?
 
-  subTotal   Int
-  shipping   Int
-  total      Int
+  subTotal Int
+  shipping Int
+  total    Int
 
-  items      OrderItem[]
+  items    OrderItem[]
 }
 
 model OrderItem {
@@ -38,7 +39,7 @@ model OrderItem {
 
   productId String
   name      String
-  price     Int     // 單價（NTD）
+  price     Int
   qty       Int
   image     String?
 }

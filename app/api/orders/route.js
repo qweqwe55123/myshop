@@ -1,61 +1,84 @@
+// app/api/orders/route.js
 export const runtime = "nodejs";
 
-// 用相對路徑，避免 alias 沒生效
 import { prisma } from "../../lib/prisma";
-import { products } from "../../data/products";
+import { products } from "../../data/products"; // 依你的專案：app/data/products.js
 
-function genOrderNo() {
-  const d = new Date().toISOString().slice(0, 10).replace(/-/g, "");
-  const r = crypto.randomUUID().slice(0, 8);
-  return `HEM-${d}-${r}`;
-}
+// 強制把任何值轉成正整數
+const toInt = (v, d = 0) => {
+  const n = Math.trunc(Number(v));
+  return Number.isFinite(n) && n > 0 ? n : d;
+};
+
+// 安全產生訂單號
+const orderNo = () =>
+  `HEM-${new Date().toISOString().slice(0,10).replace(/-/g,"")}-${Math.random()
+    .toString(36)
+    .slice(2, 8)}`;
 
 export async function POST(req) {
   try {
-    const body = await req.json();               // { customer?, items:[{id, qty}] }
-    const itemsInput = Array.isArray(body.items) ? body.items : [];
-    if (!itemsInput.length) {
-      return new Response(JSON.stringify({ error: "EMPTY_ITEMS" }), { status: 400 });
+    const body = await req.json(); // { customer?, items:[{id, qty}] }
+
+    // 基本驗證
+    if (!Array.isArray(body?.items) || body.items.length === 0) {
+      return Response.json({ error: "EMPTY_ITEMS" }, { status: 400 });
     }
 
-    const map = new Map(products.map(p => [p.id, p]));
-    const safeItems = [];
-    for (const it of itemsInput) {
+    // 用 products 表轉換，確保價格是 Int
+    const map = new Map(products.map((p) => [p.id, p]));
+    const createItems = [];
+
+    for (const it of body.items) {
       const p = map.get(it.id);
       if (!p) {
-        return new Response(JSON.stringify({ error: "PRODUCT_NOT_FOUND", id: it.id }), { status: 400 });
+        return Response.json(
+          { error: "PRODUCT_NOT_FOUND", id: it.id },
+          { status: 400 }
+        );
       }
-      const qty = Math.max(1, Number(it.qty) || 1);
-      safeItems.push({
+      const qty = toInt(it.qty, 1);
+      createItems.push({
         productId: p.id,
         name: p.name,
-        price: Number(p.price),
+        price: toInt(p.price, 0),
         qty,
         image: p.images?.[0] ?? null,
       });
     }
 
-    const subTotal = safeItems.reduce((s, it) => s + it.price * it.qty, 0);
+    const subTotal = createItems.reduce((s, x) => s + x.price * x.qty, 0);
     const shipping = 60;
     const total = subTotal + shipping;
 
     const created = await prisma.order.create({
       data: {
-        orderNo: genOrderNo(),
+        orderNo: orderNo(),
         status: "PENDING",
-        subTotal, shipping, total,
+        subTotal,
+        shipping,
+        total,
         customerName: body.customer?.name ?? null,
         customerPhone: body.customer?.phone ?? null,
         customerEmail: body.customer?.email ?? null,
         note: body.customer?.note ?? null,
-        items: { create: safeItems },
+        items: { create: createItems },
       },
       select: { id: true, orderNo: true },
     });
 
-    return new Response(JSON.stringify(created), { status: 201 });
+    return Response.json(created, { status: 201 });
   } catch (e) {
-    console.error("Create order failed:", e);
-    return new Response(JSON.stringify({ error: "SERVER_ERROR", message: String(e?.message ?? e) }), { status: 500 });
+    // 關鍵：把真正錯誤回傳給前端＋寫入 Functions logs
+    console.error("POST /api/orders error:", e);
+    return Response.json(
+      {
+        error: "SERVER_ERROR",
+        message: e?.message ?? String(e),
+        prismaCode: e?.code ?? null,
+        stack: process.env.NODE_ENV !== "production" ? e?.stack : undefined,
+      },
+      { status: 500 }
+    );
   }
 }
