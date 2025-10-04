@@ -2,6 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
+/* 你的其他全域 CSS 放這裡… */
+
 /* --- Reset & base --- */
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; }
