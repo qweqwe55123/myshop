@@ -4,21 +4,27 @@ import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { useCart } from "../components/CartProvider";
 
+// 取得商品縮圖：優先 cover → 第3張純產品圖 → 第1張 → 單張 image → placeholder
+const coverOf = (p = {}) =>
+  p.cover ||
+  (Array.isArray(p.images) && (p.images[2] || p.images[0])) ||
+  p.image ||
+  "/placeholder.png";
+
+const fmt = (n) => `NT$ ${Number(n || 0)}`;
+
 export default function CartPage() {
   const router = useRouter();
-  // 盡量容錯：如果某些方法在你的 CartProvider 尚未提供，就用 fallback
   const cart = (typeof useCart === "function" ? useCart() : {}) || {};
   const {
     items = [],
-    inc,                 // (id) => void
-    dec,                 // (id) => void
-    setQty,              // (id, qty) => void
-    removeItem,          // (id) => void
+    inc, // (id)=>void
+    dec, // (id)=>void
+    setQty, // (id, qty)=>void
+    removeItem, // (id)=>void
   } = cart;
 
-  const [editing, setEditing] = useState({}); // { [id]: "2" } 文字輸入暫存
-
-  const fmt = (n) => `NT$ ${Number(n || 0)}`;
+  const [editing, setEditing] = useState({}); // { [id]: "2" }
 
   const subTotal = useMemo(
     () =>
@@ -28,26 +34,22 @@ export default function CartPage() {
       ),
     [items]
   );
-  const shipping = items.length ? 60 : 0; // 超商運費固定 60
+  const shipping = items.length ? 60 : 0;
   const total = subTotal + shipping;
 
-  // ---- 數量控制（盡量相容不同的 CartProvider 實作） ----
+  // -------- 數量控制 --------
   const handleDec = (id, currentQty) => {
     if (typeof dec === "function") return dec(id);
     if (typeof setQty === "function")
       return setQty(id, Math.max(1, Number(currentQty || 1) - 1));
   };
-
   const handleInc = (id, currentQty) => {
     if (typeof inc === "function") return inc(id);
     if (typeof setQty === "function")
       return setQty(id, Math.min(99, Number(currentQty || 1) + 1));
   };
-
-  const handleInputChange = (id, val) => {
+  const handleInputChange = (id, val) =>
     setEditing((e) => ({ ...e, [id]: val }));
-  };
-
   const handleInputBlur = (id, currentQty) => {
     const raw = editing[id] ?? String(currentQty ?? 1);
     let q = parseInt(raw, 10);
@@ -59,7 +61,6 @@ export default function CartPage() {
       return rest;
     });
   };
-
   const handleRemove = (id) => {
     if (typeof removeItem === "function") removeItem(id);
   };
@@ -79,7 +80,7 @@ export default function CartPage() {
         </div>
       ) : (
         <div className="grid gap-6 md:grid-cols-[2fr_1fr]">
-          {/* 左：商品列表 */}
+          {/* 左：商品列表（含縮圖、數量控制、移除） */}
           <div className="rounded-2xl border p-4 bg-white">
             <ul className="divide-y">
               {items.map((it) => {
@@ -87,10 +88,26 @@ export default function CartPage() {
                   editing[it.id] !== undefined
                     ? editing[it.id]
                     : String(Number(it.qty) || 1);
+                const cover = coverOf(it);
 
                 return (
-                  <li key={it.id} className="flex items-center justify-between py-4 gap-4">
-                    {/* 名稱 & 單價 */}
+                  <li
+                    key={it.id}
+                    className="flex items-center gap-4 py-4"
+                  >
+                    {/* 縮圖 */}
+                    <div className="shrink-0">
+                      <div className="h-24 w-24 rounded-xl border bg-white p-2 flex items-center justify-center">
+                        <img
+                          src={cover}
+                          alt={it.name}
+                          className="max-h-full max-w-full object-contain"
+                          loading="lazy"
+                        />
+                      </div>
+                    </div>
+
+                    {/* 名稱 + 單價 */}
                     <div className="min-w-0 flex-1">
                       <div className="font-medium truncate">{it.name}</div>
                       <div className="text-sm text-slate-500">
@@ -144,7 +161,7 @@ export default function CartPage() {
             </ul>
           </div>
 
-          {/* 右：金額摘要與前往結帳 */}
+          {/* 右：摘要 */}
           <aside className="rounded-2xl border p-4 bg-white space-y-3 h-fit">
             <h2 className="font-semibold">訂單摘要</h2>
             <div className="flex justify-between text-sm">
