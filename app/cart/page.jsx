@@ -1,227 +1,81 @@
-// app/cart/page.jsx
 "use client";
 
-import Link from "next/link";
-import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "../components/CartProvider";
 
-const SHIPPING = 60; // 超商取貨固定運費
-
 export default function CartPage() {
   const router = useRouter();
-  const { items, setQty, removeFromCart, clearCart } = useCart();
-  const [coupon, setCoupon] = useState("");
-  const [couponMsg, setCouponMsg] = useState("尚未輸入");
-  const [submitting, setSubmitting] = useState(false);
+  // 你的 CartProvider 只要提供 items 就行；其餘控制（移除/調整數量）這裡不強制使用
+  const { items = [] } = useCart?.() || { items: [] };
 
-  const subTotal = useMemo(
-    () => items.reduce((s, it) => s + (Number(it.price) || 0) * (Number(it.qty) || 0), 0),
-    [items]
+  const subTotal = items.reduce(
+    (sum, it) => sum + (Number(it.price) || 0) * (Number(it.qty) || 1),
+    0
   );
-  const shipping = items.length ? SHIPPING : 0;
-  const discount = 0;
-  const total = Math.max(0, subTotal + shipping - discount);
+  const shipping = items.length ? 60 : 0; // 超商運費固定 60
+  const total = subTotal + shipping;
 
-  // ★ 這就是你要放的整段（含錯誤訊息顯示）
-  async function createOrderAndGo() {
-    if (!items.length || submitting) return;
-    setSubmitting(true);
-    try {
-      const payload = {
-        customer: {},                                   // 之後有表單再塞
-        items: items.map(it => ({ id: it.id, qty: it.qty })), // 只送 id/qty，後端會重算價格
-        ship: "cvs",
-        payment: "ATM",
-      };
-
-      const res = await fetch("/api/orders", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      // 嘗試解析錯誤訊息，讓你線上也看得到原因
-      const text = await res.text();
-      let data;
-      try { data = JSON.parse(text); } catch { data = { raw: text }; }
-
-      if (!res.ok) {
-        alert("建立訂單失敗：" + (data?.error || data?.message || data?.raw || "未知錯誤"));
-        return;
-      }
-
-      // 成功就導到訂單頁
-      router.push(`/orders/${data.id}`);
-    } catch (e) {
-      alert("建立訂單失敗：" + (e?.message ?? e));
-    } finally {
-      setSubmitting(false);
-    }
-  }
-
-  if (!items.length) {
-    return (
-      <div className="p-6">
-        <h1 className="text-2xl font-bold mb-4">購物車</h1>
-        <p className="text-slate-600">目前沒有商品。</p>
-        <Link href="/products" className="text-blue-600 underline mt-3 inline-block">
-          去逛逛商品 →
-        </Link>
-      </div>
-    );
-  }
+  const goCheckout = () => {
+    if (!items.length) return;
+    router.push("/checkout");
+  };
 
   return (
-    <div className="grid lg:grid-cols-[1fr_360px] gap-8">
-      {/* 左邊：購物清單 */}
-      <section className="space-y-6">
-        <h1 className="text-2xl font-bold">購物清單確認</h1>
+    <main className="mx-auto max-w-4xl p-6 space-y-6">
+      <h1 className="text-2xl font-semibold">購物車</h1>
 
-        <div className="bg-white border rounded-xl overflow-hidden">
-          {/* 表頭（桌面） */}
-          <div className="hidden md:grid grid-cols-[1fr_120px_120px_120px_48px] px-4 py-3 text-sm text-slate-600 border-b">
-            <div>商品</div>
-            <div className="text-right">單價</div>
-            <div className="text-center">數量</div>
-            <div className="text-right">小計</div>
-            <div></div>
+      {!items.length ? (
+        <div className="rounded-2xl border p-6 bg-white">
+          你的購物車目前是空的。
+        </div>
+      ) : (
+        <div className="grid gap-6 md:grid-cols-[2fr_1fr]">
+          {/* 左：商品列表 */}
+          <div className="rounded-2xl border p-4 bg-white">
+            <ul className="divide-y">
+              {items.map((it) => (
+                <li key={it.id} className="flex items-center justify-between py-4">
+                  <div className="min-w-0">
+                    <div className="font-medium truncate">{it.name}</div>
+                    <div className="text-sm text-slate-500">
+                      數量：{Number(it.qty) || 1}
+                    </div>
+                  </div>
+                  <div className="text-sm whitespace-nowrap">
+                    NT$ {(Number(it.price) || 0) * (Number(it.qty) || 1)}
+                  </div>
+                </li>
+              ))}
+            </ul>
           </div>
 
-          {/* 品項列 */}
-          {items.map((it) => (
-            <div
-              key={it.id}
-              className="grid grid-cols-1 md:grid-cols-[1fr_120px_120px_120px_48px] gap-3 px-4 py-4 items-center border-b last:border-b-0"
-            >
-              {/* 商品資訊 */}
-              <div className="flex items-center gap-4">
-                <div className="w-16 h-16 bg-slate-100 flex items-center justify-center overflow-hidden rounded-lg shrink-0">
-                  <img
-                    src={(it.images && it.images[0]) || "/placeholder.png"}
-                    alt={it.name}
-                    className="max-w-full max-h-full object-contain"
-                  />
-                </div>
-                <div className="font-medium">{it.name}</div>
-              </div>
-
-              {/* 單價（桌面顯示） */}
-              <div className="hidden md:block md:text-right">
-                NT$ {Number(it.price).toLocaleString()}
-              </div>
-
-              {/* 數量 */}
-              <div className="md:text-center">
-                <select
-                  value={it.qty}
-                  onChange={(e) => setQty(it.id, Number(e.target.value))}
-                  className="border rounded-lg h-9 px-2"
-                >
-                  {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
-                    <option key={n} value={n}>{n}</option>
-                  ))}
-                </select>
-              </div>
-
-              {/* 小計 */}
-              <div className="md:text-right font-semibold">
-                NT$ {(Number(it.price) * Number(it.qty)).toLocaleString()}
-              </div>
-
-              {/* 刪除 */}
-              <div className="text-right">
-                <button
-                  onClick={() => removeFromCart(it.id)}
-                  className="text-slate-500 hover:text-red-600"
-                  title="移除"
-                >
-                  ×
-                </button>
-              </div>
+          {/* 右：金額摘要與前往結帳 */}
+          <aside className="rounded-2xl border p-4 bg-white space-y-3 h-fit">
+            <h2 className="font-semibold">訂單摘要</h2>
+            <div className="flex justify-between text-sm">
+              <span>商品小計</span>
+              <span>NT$ {subTotal}</span>
             </div>
-          ))}
-        </div>
+            <div className="flex justify-between text-sm">
+              <span>運費（超商）</span>
+              <span>NT$ {shipping}</span>
+            </div>
+            <div className="h-px bg-slate-200" />
+            <div className="flex justify-between font-semibold">
+              <span>總計</span>
+              <span>NT$ {total}</span>
+            </div>
 
-        {/* 活動代碼（虛線框） */}
-        <div className="border-2 border-dashed rounded-xl p-4 text-sm">
-          <div className="font-medium mb-3">活動代碼</div>
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
-            <input
-              value={coupon}
-              onChange={(e) => setCoupon(e.target.value)}
-              placeholder="請輸入"
-              className="border rounded-lg h-10 px-3 w-56"
-            />
             <button
-              onClick={() => setCouponMsg(coupon ? `已輸入：${coupon}` : "尚未輸入")}
-              className="h-10 px-4 rounded-lg bg-black text-white"
+              onClick={goCheckout}
+              disabled={!items.length}
+              className="w-full rounded-lg bg-black px-4 py-2 text-white disabled:opacity-50"
             >
-              送出
+              前往結帳
             </button>
-          </div>
-          <div className="text-slate-500 mt-3">{couponMsg}</div>
+          </aside>
         </div>
-      </section>
-
-      {/* 右邊：訂單資訊 */}
-      <aside className="space-y-6">
-        <div className="bg-white border rounded-xl p-4 space-y-6">
-          <div>
-            <div className="font-bold mb-2">訂單資訊</div>
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-slate-600">商品小計</span>
-              <span>NT$ {subTotal.toLocaleString()}</span>
-            </div>
-          </div>
-
-          {/* 取貨方式：只顯示超商 +60 */}
-          <div>
-            <div className="font-bold mb-2">取貨方式</div>
-            <label className="flex items-center gap-3">
-              <input type="radio" checked readOnly />
-              <span>超商取貨</span>
-              <span className="ml-auto text-xs rounded-full border px-2 py-0.5">+60</span>
-            </label>
-          </div>
-
-          {/* 付款方式：只顯示 ATM */}
-          <div>
-            <div className="font-bold mb-2">付款方式</div>
-            <label className="flex items-center gap-3">
-              <input type="radio" defaultChecked readOnly />
-              <span>ATM 轉帳</span>
-            </label>
-          </div>
-
-          {/* 運費/合計 */}
-          <div className="space-y-2 border-t pt-3">
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-slate-600">運費</span>
-              <span>NT$ {shipping.toLocaleString()}</span>
-            </div>
-            <div className="flex items-center justify-between text-lg font-bold pt-2">
-              <span>合計</span>
-              <span>NT$ {total.toLocaleString()}</span>
-            </div>
-          </div>
-
-          <button
-            onClick={createOrderAndGo}
-            disabled={submitting}
-            className="w-full h-12 rounded-lg bg-rose-700 text-white font-semibold hover:opacity-90 disabled:opacity-60"
-          >
-            {submitting ? "處理中…" : "下一步"}
-          </button>
-
-          <button
-            onClick={clearCart}
-            className="w-full h-10 rounded-lg border hover:bg-slate-100"
-          >
-            清空購物車
-          </button>
-        </div>
-      </aside>
-    </div>
+      )}
+    </main>
   );
 }
