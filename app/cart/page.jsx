@@ -1,3 +1,4 @@
+// app/cart/page.jsx
 "use client";
 
 import Link from "next/link";
@@ -5,7 +6,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "../components/CartProvider";
 
-const SHIPPING = 60; // 只用超商取貨
+const SHIPPING = 60; // 超商取貨固定運費
 
 export default function CartPage() {
   const router = useRouter();
@@ -15,39 +16,45 @@ export default function CartPage() {
   const [submitting, setSubmitting] = useState(false);
 
   const subTotal = useMemo(
-    () =>
-      items.reduce(
-        (s, it) => s + (Number(it.price) || 0) * (Number(it.qty) || 0),
-        0
-      ),
+    () => items.reduce((s, it) => s + (Number(it.price) || 0) * (Number(it.qty) || 0), 0),
     [items]
   );
-
   const shipping = items.length ? SHIPPING : 0;
   const discount = 0;
   const total = Math.max(0, subTotal + shipping - discount);
 
+  // ★ 這就是你要放的整段（含錯誤訊息顯示）
   async function createOrderAndGo() {
     if (!items.length || submitting) return;
     setSubmitting(true);
     try {
       const payload = {
-        customer: {}, // 之後要帶表單資料可放進來
-        items: items.map((it) => ({ id: it.id, qty: it.qty })),
+        customer: {},                                   // 之後有表單再塞
+        items: items.map(it => ({ id: it.id, qty: it.qty })), // 只送 id/qty，後端會重算價格
         ship: "cvs",
         payment: "ATM",
-        note: "",
       };
+
       const res = await fetch("/api/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      if (!res.ok) throw new Error("建立訂單失敗");
-      const data = await res.json(); // { id, orderNo }
+
+      // 嘗試解析錯誤訊息，讓你線上也看得到原因
+      const text = await res.text();
+      let data;
+      try { data = JSON.parse(text); } catch { data = { raw: text }; }
+
+      if (!res.ok) {
+        alert("建立訂單失敗：" + (data?.error || data?.message || data?.raw || "未知錯誤"));
+        return;
+      }
+
+      // 成功就導到訂單頁
       router.push(`/orders/${data.id}`);
     } catch (e) {
-      alert(e.message || "發生錯誤，請稍後再試");
+      alert("建立訂單失敗：" + (e?.message ?? e));
     } finally {
       setSubmitting(false);
     }
@@ -58,10 +65,7 @@ export default function CartPage() {
       <div className="p-6">
         <h1 className="text-2xl font-bold mb-4">購物車</h1>
         <p className="text-slate-600">目前沒有商品。</p>
-        <Link
-          href="/products"
-          className="text-blue-600 underline mt-3 inline-block"
-        >
+        <Link href="/products" className="text-blue-600 underline mt-3 inline-block">
           去逛逛商品 →
         </Link>
       </div>
@@ -75,7 +79,7 @@ export default function CartPage() {
         <h1 className="text-2xl font-bold">購物清單確認</h1>
 
         <div className="bg-white border rounded-xl overflow-hidden">
-          {/* 表頭 */}
+          {/* 表頭（桌面） */}
           <div className="hidden md:grid grid-cols-[1fr_120px_120px_120px_48px] px-4 py-3 text-sm text-slate-600 border-b">
             <div>商品</div>
             <div className="text-right">單價</div>
@@ -90,7 +94,7 @@ export default function CartPage() {
               key={it.id}
               className="grid grid-cols-1 md:grid-cols-[1fr_120px_120px_120px_48px] gap-3 px-4 py-4 items-center border-b last:border-b-0"
             >
-              {/* 商品 */}
+              {/* 商品資訊 */}
               <div className="flex items-center gap-4">
                 <div className="w-16 h-16 bg-slate-100 flex items-center justify-center overflow-hidden rounded-lg shrink-0">
                   <img
@@ -102,7 +106,7 @@ export default function CartPage() {
                 <div className="font-medium">{it.name}</div>
               </div>
 
-              {/* 單價（桌面版顯示） */}
+              {/* 單價（桌面顯示） */}
               <div className="hidden md:block md:text-right">
                 NT$ {Number(it.price).toLocaleString()}
               </div>
@@ -115,9 +119,7 @@ export default function CartPage() {
                   className="border rounded-lg h-9 px-2"
                 >
                   {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
-                    <option key={n} value={n}>
-                      {n}
-                    </option>
+                    <option key={n} value={n}>{n}</option>
                   ))}
                 </select>
               </div>
@@ -152,9 +154,7 @@ export default function CartPage() {
               className="border rounded-lg h-10 px-3 w-56"
             />
             <button
-              onClick={() =>
-                setCouponMsg(coupon ? `已輸入：${coupon}` : "尚未輸入")
-              }
+              onClick={() => setCouponMsg(coupon ? `已輸入：${coupon}` : "尚未輸入")}
               className="h-10 px-4 rounded-lg bg-black text-white"
             >
               送出
@@ -181,9 +181,7 @@ export default function CartPage() {
             <label className="flex items-center gap-3">
               <input type="radio" checked readOnly />
               <span>超商取貨</span>
-              <span className="ml-auto text-xs rounded-full border px-2 py-0.5">
-                +60
-              </span>
+              <span className="ml-auto text-xs rounded-full border px-2 py-0.5">+60</span>
             </label>
           </div>
 
