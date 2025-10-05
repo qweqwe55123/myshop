@@ -109,7 +109,8 @@ export default function CheckoutForm() {
       } catch {}
 
       // ★ 用 orderNo || id 導頁，避免「找不到訂單」
-      router.push(`/orders/${data.orderNo || data.id}`);
+      const { orderNo } = await res.json();
+router.push(`/orders/${orderNo}`);
     } catch (e2) {
       setErr(String(e2?.message ?? e2));
     } finally {

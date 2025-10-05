@@ -1,20 +1,36 @@
 // app/api/orders/[id]/route.js
-import { prisma } from "@/app/lib/prisma"; // 如果你的路徑不同，換成你的實際路徑
-export const dynamic = "force-dynamic";
+import { NextResponse } from "next/server";
+// ⬇⬇⬇ 同樣把路徑改成你實際的 ⬇⬇⬇
+import { prisma } from "@/lib/prisma"; // 或 "../../../../lib/prisma"
+
+export const runtime = "nodejs";
 
 export async function GET(_req, { params }) {
-  const key = params.id; // 可能是 orderNo (HEM-...) 或資料庫 id（字串 / 整數都行）
   try {
-    const where = {
-      OR: [{ id: key }, { orderNo: key }],
-    };
-    if (Number.isFinite(Number(key))) where.OR.push({ id: Number(key) });
+    const id = params?.id;
+    if (!id) {
+      return NextResponse.json({ error: "NO_ID" }, { status: 400 });
+    }
 
-    const order = await prisma.order.findFirst({ where });
-    if (!order) return new Response("NOT_FOUND", { status: 404 });
-    return Response.json(order);
-  } catch (err) {
-    console.error("GET /api/orders/[id] error:", err);
-    return new Response("SERVER_ERROR", { status: 500 });
+    // 你前端導頁用的是 orderNo，就用 orderNo 查；
+    // 如果你是用資料庫 primary id 導頁，這裡就改成 where: { id }
+    const order =
+      (await prisma.order.findUnique({
+        where: { orderNo: id },
+        include: { items: true },
+      })) ||
+      null;
+
+    if (!order) {
+      return NextResponse.json({ error: "NOT_FOUND" }, { status: 404 });
+    }
+
+    return NextResponse.json(order, { status: 200 });
+  } catch (e) {
+    console.error("GET /api/orders/[id] error:", e);
+    return NextResponse.json(
+      { error: "SERVER_ERROR", message: String(e) },
+      { status: 500 }
+    );
   }
 }
