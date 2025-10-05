@@ -184,7 +184,7 @@ export default function CheckoutForm() {
             placeholder="例：7-ELEVEN 松福門市（935392）"
             className="w-full rounded-md border p-2"
           />
-          <p className="text-xs text-slate-500">目前先手動輸入門市名稱／店號。</p>
+          <p className="text-xs text-slate-500">請手動輸入門市名稱。</p>
         </section>
 
         {/* 付款方式（僅顯示文字，不曝露帳號） */}
