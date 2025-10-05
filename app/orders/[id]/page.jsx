@@ -1,82 +1,74 @@
 // app/orders/[id]/page.jsx
-import { BANK_INFO } from "../../config/bank";
+"use client";
 
-export const dynamic = "force-dynamic"; // 不要快取
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 
-async function getOrder(id) {
-  // 在開發、本機與 Vercel 都可用的 base URL
-  const base =
-    process.env.NEXT_PUBLIC_SITE_URL ||
-    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
+export default function OrderDetailPage() {
+  const { id } = useParams(); // 取得路由參數
+  const [order, setOrder] = useState(null);
+  const [error, setError] = useState("");
 
-  const res = await fetch(`${base}/api/orders/${id}`, { cache: "no-store" });
-  if (!res.ok) throw new Error("ORDER_NOT_FOUND");
-  return res.json();
-}
+  useEffect(() => {
+    if (!id) return;
 
-export default async function OrderSuccessPage({ params }) {
-  const { id } = params;
+    const fetchOrder = async () => {
+      try {
+        const res = await fetch(`/api/orders/${id}`);
+        if (!res.ok) {
+          setError(`找不到訂單（${res.status}）`);
+          return;
+        }
+        const data = await res.json();
+        setOrder(data);
+      } catch (err) {
+        setError("伺服器錯誤，請稍後再試");
+      }
+    };
 
-  let order;
-  try {
-    order = await getOrder(id);
-  } catch {
+    fetchOrder();
+  }, [id]);
+
+  if (error)
     return (
-      <div className="rounded-2xl border p-6">
-        <h1 className="text-xl font-semibold mb-2">找不到訂單</h1>
-        <p className="text-sm text-slate-600">訂單編號：{id}</p>
+      <div className="p-8 text-center">
+        <h2 className="text-xl font-bold text-red-600">找不到訂單</h2>
+        <p className="text-sm text-gray-500">訂單編號：{id}</p>
+        <p className="mt-2 text-gray-600">{error}</p>
       </div>
     );
-  }
 
-  const items = order.items || [];
-  const subTotal =
-    order.subTotal ??
-    items.reduce((s, it) => s + (Number(it.price) || 0) * (Number(it.qty) || 1), 0);
-  const shipping = order.shipping ?? 60;
-  const total = order.total ?? subTotal + shipping;
+  if (!order)
+    return (
+      <div className="p-8 text-center text-gray-500">載入中...</div>
+    );
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-semibold">訂單建立成功</h1>
+    <div className="max-w-2xl mx-auto p-6 bg-white rounded-xl shadow">
+      <h1 className="text-2xl font-semibold mb-4">訂單成立成功 🎉</h1>
+      <p className="mb-2">訂單編號：{order.orderNo}</p>
+      <p className="mb-2">姓名：{order.customerName}</p>
+      <p className="mb-2">電話：{order.customerPhone}</p>
+      <p className="mb-2">取貨門市：{order.pickupStore}</p>
+      <p className="mb-2">總金額：NT$ {order.total}</p>
 
-      {/* 訂單摘要 */}
-      <section className="rounded-2xl border p-5 space-y-2">
-        <p className="text-sm">
-          訂單編號：<span className="font-mono">{order.orderNo || order.id}</span>
-        </p>
-        <div className="text-sm">小計：NT$ {subTotal}</div>
-        <div className="text-sm">運費：NT$ {shipping}</div>
-        <div className="font-semibold">總計：NT$ {total}</div>
-      </section>
+      <hr className="my-4" />
+      <h2 className="text-lg font-bold mb-2">訂購明細</h2>
+      <ul className="divide-y">
+        {order.items.map((it) => (
+          <li key={it.id} className="flex justify-between py-2">
+            <span>{it.name} × {it.qty}</span>
+            <span>NT$ {it.price * it.qty}</span>
+          </li>
+        ))}
+      </ul>
 
-      {/* 匯款資訊（已放在總計下面、商品明細上面） */}
-      <section className="rounded-2xl border p-5 space-y-2">
-        <h3 className="font-semibold">匯款資訊</h3>
-        <p className="text-sm">
-          銀行：{BANK_INFO.bankName}（{BANK_INFO.bankCode}）
-        </p>
-        <p className="text-sm">
-          帳號：<span className="font-mono tracking-wider">{BANK_INFO.accountNumber}</span>
-        </p>
-      </section>
-
-      {/* 商品明細 */}
-      <section className="rounded-2xl border p-5 space-y-2">
-        <h3 className="font-semibold">商品明細</h3>
-        <ul className="divide-y">
-          {items.map((it, idx) => (
-            <li key={it.id || idx} className="flex items-center justify-between py-3">
-              <div className="text-sm">
-                {it.name} × {Number(it.qty) || 1}
-              </div>
-              <div className="text-sm">
-                NT$ {(Number(it.price) || 0) * (Number(it.qty) || 1)}
-              </div>
-            </li>
-          ))}
-        </ul>
-      </section>
+      <hr className="my-4" />
+      <div className="text-sm text-gray-600">
+        <p>付款方式：ATM 轉帳</p>
+        <p>銀行代碼：008 華南銀行</p>
+        <p>帳號：752100065001</p>
+      </div>
     </div>
   );
 }

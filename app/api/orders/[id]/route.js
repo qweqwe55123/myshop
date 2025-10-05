@@ -1,8 +1,7 @@
 // app/api/orders/[id]/route.js
 import { NextResponse } from "next/server";
-// ⬇⬇⬇ 同樣把路徑改成你實際的 ⬇⬇⬇
 import { prisma } from "../../../lib/prisma";
-
+export const dynamic = 'force-dynamic';
 export const runtime = "nodejs";
 
 export async function GET(_req, { params }) {
