@@ -1,6 +1,6 @@
 // app/api/orders/[id]/route.js
 import { NextResponse } from "next/server";
-import { prisma } from "../../../lib/prisma"; // ← 注意：相對於 app/api/orders/[id]/
+import { prisma } from "../../lib/prisma"; // ← 注意：相對於 app/api/orders/[id]/
 
 export const runtime = "nodejs";
 
