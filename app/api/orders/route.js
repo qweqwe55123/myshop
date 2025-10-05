@@ -1,7 +1,7 @@
 // app/api/orders/route.js
 import { NextResponse } from "next/server";
 // ⬇⬇⬇ 把這行改成你專案實際的 prisma 匯入路徑 ⬇⬇⬇
-import { prisma } from "../../../lib/prisma";
+import { prisma } from "../../lib/prisma";
 
 export const runtime = "nodejs";
 
