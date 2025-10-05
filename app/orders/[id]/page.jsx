@@ -1,79 +1,82 @@
-export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
+// app/orders/[id]/page.jsx
+import { BANK_INFO } from "../../config/bank";
 
-import { notFound } from "next/navigation";
-import { prisma } from "../../lib/prisma";
-import CopyField from "../CopyField"; // ← 新增這行
-
-function buildAtmInfo(order) {
-  const bank = "812";
-  const digits = (order.orderNo || order.id).replace(/\D/g, "");
-  const acct = (digits + "00000000000000").slice(-14);
-  const due = new Date(Date.now() + 3 * 86400000);
-  const dueStr = `${due.getFullYear()}/${String(due.getMonth() + 1).padStart(2, "0")}/${String(
-    due.getDate()
-  ).padStart(2, "0")}`;
-  return { bank, acct, amount: order.total, dueStr };
-}
+export const dynamic = "force-dynamic"; // 不要快取
 
 async function getOrder(id) {
-  return prisma.order.findUnique({
-    where: { id },
-    include: { items: true },
-  });
+  // 在開發、本機與 Vercel 都可用的 base URL
+  const base =
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
+
+  const res = await fetch(`${base}/api/orders/${id}`, { cache: "no-store" });
+  if (!res.ok) throw new Error("ORDER_NOT_FOUND");
+  return res.json();
 }
 
-export default async function OrderPage({ params }) {
-  const id = Array.isArray(params?.id) ? params.id[0] : params?.id;
-  if (!id) return notFound();
+export default async function OrderSuccessPage({ params }) {
+  const { id } = params;
 
-  const order = await getOrder(id);
-  if (!order) return notFound();
+  let order;
+  try {
+    order = await getOrder(id);
+  } catch {
+    return (
+      <div className="rounded-2xl border p-6">
+        <h1 className="text-xl font-semibold mb-2">找不到訂單</h1>
+        <p className="text-sm text-slate-600">訂單編號：{id}</p>
+      </div>
+    );
+  }
 
-  const atm = buildAtmInfo(order);
+  const items = order.items || [];
+  const subTotal =
+    order.subTotal ??
+    items.reduce((s, it) => s + (Number(it.price) || 0) * (Number(it.qty) || 1), 0);
+  const shipping = order.shipping ?? 60;
+  const total = order.total ?? subTotal + shipping;
 
   return (
-    <main className="mx-auto max-w-2xl p-6 space-y-6">
+    <div className="space-y-6">
       <h1 className="text-2xl font-semibold">訂單建立成功</h1>
 
-      <div className="rounded-lg border p-4 space-y-1 bg-white">
-        <div>訂單編號：<b>{order.orderNo ?? order.id}</b></div>
-        {order.customerName && <div>訂購人：{order.customerName}</div>}
-        {order.customerPhone && <div>手機：{order.customerPhone}</div>}
-        {order.customerEmail && <div>Email：{order.customerEmail}</div>}
-        {order.pickupStore && <div>超商門市：{order.pickupStore}</div>}
-        {order.note && <div>備註：{order.note}</div>}
-        <div>小計：NT$ {order.subTotal}</div>
-        <div>運費：NT$ {order.shipping}</div>
-        <div className="font-semibold">總計：NT$ {order.total}</div>
-      </div>
-
-      <div className="rounded-lg border p-4 bg-white space-y-3">
-        <h2 className="font-semibold">ATM 轉帳資訊</h2>
-        <div className="grid gap-2 sm:grid-cols-2">
-          <CopyField label="銀行代碼" value={atm.bank} />
-          <CopyField label="轉帳金額" value={`NT$ ${atm.amount}`} />
-          <CopyField label="虛擬帳號" value={atm.acct} />
-          <CopyField label="繳費期限" value={atm.dueStr} />
-        </div>
-        <p className="text-xs text-slate-500">
-          ※ 示範資料；正式收款請串金流產生真實帳號與期限。
+      {/* 訂單摘要 */}
+      <section className="rounded-2xl border p-5 space-y-2">
+        <p className="text-sm">
+          訂單編號：<span className="font-mono">{order.orderNo || order.id}</span>
         </p>
-      </div>
+        <div className="text-sm">小計：NT$ {subTotal}</div>
+        <div className="text-sm">運費：NT$ {shipping}</div>
+        <div className="font-semibold">總計：NT$ {total}</div>
+      </section>
 
-      <div className="rounded-lg border p-4 bg-white">
-        <h2 className="font-semibold mb-2">商品明細</h2>
-        <ul className="space-y-1 text-sm">
-          {order.items.map((it) => (
-            <li key={it.id} className="flex justify-between">
-              <span>
-                {it.name} × {it.qty}
-              </span>
-              <span>NT$ {it.price * it.qty}</span>
+      {/* 匯款資訊（已放在總計下面、商品明細上面） */}
+      <section className="rounded-2xl border p-5 space-y-2">
+        <h3 className="font-semibold">匯款資訊</h3>
+        <p className="text-sm">
+          銀行：{BANK_INFO.bankName}（{BANK_INFO.bankCode}）
+        </p>
+        <p className="text-sm">
+          帳號：<span className="font-mono tracking-wider">{BANK_INFO.accountNumber}</span>
+        </p>
+      </section>
+
+      {/* 商品明細 */}
+      <section className="rounded-2xl border p-5 space-y-2">
+        <h3 className="font-semibold">商品明細</h3>
+        <ul className="divide-y">
+          {items.map((it, idx) => (
+            <li key={it.id || idx} className="flex items-center justify-between py-3">
+              <div className="text-sm">
+                {it.name} × {Number(it.qty) || 1}
+              </div>
+              <div className="text-sm">
+                NT$ {(Number(it.price) || 0) * (Number(it.qty) || 1)}
+              </div>
             </li>
           ))}
         </ul>
-      </div>
-    </main>
+      </section>
+    </div>
   );
 }
