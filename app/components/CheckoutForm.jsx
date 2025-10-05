@@ -23,11 +23,11 @@ export default function CheckoutForm() {
     rPhone: "",
     rEmail: "",
     sameAsBuyer: true,
-    pickupStore: "",   // ← 仍保留這個欄位
+    pickupStore: "",
     note: "",
   });
 
-  // 同購買人
+  // 同購買人 → 自動帶入
   useEffect(() => {
     if (form.sameAsBuyer) {
       setForm((f) => ({
@@ -64,7 +64,7 @@ export default function CheckoutForm() {
             phone: form.phone,
             email: form.email,
             note: form.note || null,
-            pickupStore: form.pickupStore,   // ← 直接送手填門市
+            pickupStore: form.pickupStore,
             shipMethod: "CVS_7ELEVEN",
             payMethod: "ATM",
           },
@@ -108,18 +108,44 @@ export default function CheckoutForm() {
         {/* 購買人 */}
         <section className="space-y-3">
           <h2 className="font-semibold text-lg">購買人資訊</h2>
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="grid gap-2">
-              <label className="text-sm">姓名<span className="text-red-500">*</span></label>
-              <input name="name" value={form.name} onChange={onChange} className="rounded-md border p-2" />
+
+          {/* 手機下一欄才兩欄，手機維持單欄 */}
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            {/* 姓名 */}
+            <div className="col-span-1">
+              <label className="text-sm">
+                姓名<span className="text-red-500">*</span>
+              </label>
+              <input
+                name="name"
+                value={form.name}
+                onChange={onChange}
+                className="mt-1 w-full box-border rounded-md border p-2"
+              />
             </div>
-            <div className="grid gap-2">
-              <label className="text-sm">手機<span className="text-red-500">*</span></label>
-              <input name="phone" value={form.phone} onChange={onChange} className="rounded-md border p-2" />
+            {/* 手機 */}
+            <div className="col-span-1">
+              <label className="text-sm">
+                手機<span className="text-red-500">*</span>
+              </label>
+              <input
+                name="phone"
+                value={form.phone}
+                onChange={onChange}
+                className="mt-1 w-full box-border rounded-md border p-2"
+              />
             </div>
-            <div className="grid gap-2 md:col-span-2">
-              <label className="text-sm">電子郵件<span className="text-red-500">*</span></label>
-              <input name="email" value={form.email} onChange={onChange} className="rounded-md border p-2" />
+            {/* Email 佔滿整列 */}
+            <div className="md:col-span-2">
+              <label className="text-sm">
+                電子郵件<span className="text-red-500">*</span>
+              </label>
+              <input
+                name="email"
+                value={form.email}
+                onChange={onChange}
+                className="mt-1 w-full box-border rounded-md border p-2"
+              />
             </div>
           </div>
         </section>
@@ -127,6 +153,7 @@ export default function CheckoutForm() {
         {/* 收件人 */}
         <section className="space-y-3">
           <h2 className="font-semibold text-lg">收件人資訊</h2>
+
           <label className="inline-flex items-center gap-2 text-sm">
             <input
               type="checkbox"
@@ -135,26 +162,49 @@ export default function CheckoutForm() {
             />
             同購買人
           </label>
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="grid gap-2">
-              <label className="text-sm">姓名<span className="text-red-500">*</span></label>
-              <input name="rName" value={form.rName} onChange={onChange} disabled={form.sameAsBuyer}
-                     className="rounded-md border p-2 disabled:bg-slate-50" />
+
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            {/* 姓名 */}
+            <div className="col-span-1">
+              <label className="text-sm">
+                姓名<span className="text-red-500">*</span>
+              </label>
+              <input
+                name="rName"
+                value={form.rName}
+                onChange={onChange}
+                disabled={form.sameAsBuyer}
+                className="mt-1 w-full box-border rounded-md border p-2 disabled:bg-slate-50"
+              />
             </div>
-            <div className="grid gap-2">
-              <label className="text-sm">手機<span className="text-red-500">*</span></label>
-              <input name="rPhone" value={form.rPhone} onChange={onChange} disabled={form.sameAsBuyer}
-                     className="rounded-md border p-2 disabled:bg-slate-50" />
+            {/* 手機 */}
+            <div className="col-span-1">
+              <label className="text-sm">
+                手機<span className="text-red-500">*</span>
+              </label>
+              <input
+                name="rPhone"
+                value={form.rPhone}
+                onChange={onChange}
+                disabled={form.sameAsBuyer}
+                className="mt-1 w-full box-border rounded-md border p-2 disabled:bg-slate-50"
+              />
             </div>
-            <div className="grid gap-2 md:col-span-2">
+            {/* Email(選填) 佔滿整列 */}
+            <div className="md:col-span-2">
               <label className="text-sm">電子郵件（選填）</label>
-              <input name="rEmail" value={form.rEmail} onChange={onChange} disabled={form.sameAsBuyer}
-                     className="rounded-md border p-2 disabled:bg-slate-50" />
+              <input
+                name="rEmail"
+                value={form.rEmail}
+                onChange={onChange}
+                disabled={form.sameAsBuyer}
+                className="mt-1 w-full box-border rounded-md border p-2 disabled:bg-slate-50"
+              />
             </div>
           </div>
         </section>
 
-        {/* 取貨門市：改成手動輸入 */}
+        {/* 取貨門市（手動） */}
         <section className="space-y-3">
           <h2 className="font-semibold text-lg">取貨門市</h2>
           <input
@@ -162,7 +212,7 @@ export default function CheckoutForm() {
             value={form.pickupStore}
             onChange={onChange}
             placeholder="例：7-ELEVEN 松福門市（935392）"
-            className="rounded-md border p-2"
+            className="w-full box-border rounded-md border p-2"
           />
           <p className="text-xs text-slate-500">
             目前先手動輸入門市名稱/店號；之後再接綠界地圖自動帶入。
@@ -180,16 +230,25 @@ export default function CheckoutForm() {
         {/* 備註 */}
         <section className="space-y-2">
           <h2 className="font-semibold text-lg">訂單備註</h2>
-          <textarea name="note" value={form.note} onChange={onChange} rows={4}
-                    className="w-full rounded-md border p-2" placeholder="如有其他需求在此備註" />
+          <textarea
+            name="note"
+            value={form.note}
+            onChange={onChange}
+            rows={4}
+            placeholder="如有其他需求在此備註"
+            className="w-full box-border rounded-md border p-2"
+          />
         </section>
 
         {err && (
           <div className="rounded-md border border-red-300 bg-red-50 p-3 text-sm text-red-700">{err}</div>
         )}
 
-        <button type="submit" disabled={loading || !items.length}
-                className="w-full rounded-lg bg-black px-4 py-2 text-white disabled:opacity-50">
+        <button
+          type="submit"
+          disabled={loading || !items.length}
+          className="w-full rounded-lg bg-black px-4 py-2 text-white disabled:opacity-50"
+        >
           {loading ? "送出中…" : "前往付款 - ATM 虛擬帳號"}
         </button>
       </form>
