@@ -22,7 +22,7 @@ export async function POST(req) {
 
     // 基本驗證
     if (!Array.isArray(body?.items) || body.items.length === 0) {
-      return Response.json({ error: "EMPTY_ITEMS" }, { status: 400 });
+return Response.json({ id: order.id, orderNo: order.orderNo }, { status: 201 });
     }
 
     // 用 products 表轉換，確保價格是 Int

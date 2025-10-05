@@ -92,7 +92,7 @@ export default function CheckoutForm() {
       }
 
       try { clearCart?.(); } catch {}
-      router.push(`/orders/${data.id}`);
+      router.push(`/orders/${data.orderNo || data.id}`);
     } catch (e2) {
       setErr(String(e2?.message ?? e2));
     } finally {
