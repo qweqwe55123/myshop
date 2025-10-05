@@ -17,21 +17,21 @@ enum OrderStatus {
 }
 
 model Order {
-  id            String      @id @default(cuid())
-  orderNo       String      @unique
-  createdAt     DateTime    @default(now())
-  status        OrderStatus @default(PENDING)
+  id             String       @id @default(cuid())
+  orderNo        String       @unique
+  customerName   String?
+  customerPhone  String?
+  customerEmail  String?
+  note           String?
+  subTotal       Int
+  shipping       Int
+  total          Int
+  status         OrderStatus  @default(PENDING)
+  createdAt      DateTime     @default(now())
+  items          OrderItem[]
 
-  customerName  String?
-  customerPhone String?
-  customerEmail String?
-  note          String?
-
-  subTotal Int
-  shipping Int
-  total    Int
-
-  items    OrderItem[]
+  // 新增的欄位
+  pickupStore    String?      // ← 這是你要的門市欄位
 }
 
 model OrderItem {
