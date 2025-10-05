@@ -98,15 +98,21 @@ export default function CheckoutForm() {
         }),
       });
 
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        setErr(data?.message || data?.error || `建立失敗（${res.status}）`);
-        return;
-      }
+let data;
+try {
+  data = await res.json(); // ✅ 只讀一次 JSON
+} catch {
+  data = {};
+}
 
-      try {
-        clearCart?.();
-      } catch {}
+if (!res.ok) {
+  setErr(data?.message || data?.error || `建立失敗（${res.status}）`);
+  return;
+}
+
+try {
+  clearCart?.();
+} catch {}
 
       // ★ 用 orderNo || id 導頁，避免「找不到訂單」
       const { orderNo } = await res.json();
