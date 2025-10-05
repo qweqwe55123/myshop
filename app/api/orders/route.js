@@ -1,84 +1,34 @@
 // app/api/orders/route.js
-export const runtime = "nodejs";
+import { prisma } from "@/app/lib/prisma"; // ← 如你的 prisma 路徑不同，請改成你的實際路徑
+export const dynamic = "force-dynamic";
 
-import { prisma } from "../../lib/prisma";
-import { products } from "../../data/products"; // 依你的專案：app/data/products.js
-
-// 強制把任何值轉成正整數
-const toInt = (v, d = 0) => {
-  const n = Math.trunc(Number(v));
-  return Number.isFinite(n) && n > 0 ? n : d;
-};
-
-// 安全產生訂單號
-const orderNo = () =>
-  `HEM-${new Date().toISOString().slice(0,10).replace(/-/g,"")}-${Math.random()
-    .toString(36)
-    .slice(2, 8)}`;
+function genOrderNo(prefix = "HEM") {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  const rand = Math.random().toString(36).slice(2, 7);
+  return `${prefix}-${y}${m}${day}-${rand}`;
+}
 
 export async function POST(req) {
   try {
-    const body = await req.json(); // { customer?, items:[{id, qty}] }
+    const body = await req.json();
 
-    // 基本驗證
-    if (!Array.isArray(body?.items) || body.items.length === 0) {
-return Response.json({ id: order.id, orderNo: order.orderNo }, { status: 201 });
-    }
+    // 若前端未帶 orderNo，這裡自動產生一個
+    const orderNo = body.orderNo ?? genOrderNo();
 
-    // 用 products 表轉換，確保價格是 Int
-    const map = new Map(products.map((p) => [p.id, p]));
-    const createItems = [];
-
-    for (const it of body.items) {
-      const p = map.get(it.id);
-      if (!p) {
-        return Response.json(
-          { error: "PRODUCT_NOT_FOUND", id: it.id },
-          { status: 400 }
-        );
-      }
-      const qty = toInt(it.qty, 1);
-      createItems.push({
-        productId: p.id,
-        name: p.name,
-        price: toInt(p.price, 0),
-        qty,
-        image: p.images?.[0] ?? null,
-      });
-    }
-
-    const subTotal = createItems.reduce((s, x) => s + x.price * x.qty, 0);
-    const shipping = 60;
-    const total = subTotal + shipping;
-
-    const created = await prisma.order.create({
+    const order = await prisma.order.create({
       data: {
-        orderNo: orderNo(),
-        status: "PENDING",
-        subTotal,
-        shipping,
-        total,
-        customerName: body.customer?.name ?? null,
-        customerPhone: body.customer?.phone ?? null,
-        customerEmail: body.customer?.email ?? null,
-        note: body.customer?.note ?? null,
-        items: { create: createItems },
+        ...body,
+        orderNo,
       },
-      select: { id: true, orderNo: true },
     });
 
-    return Response.json(created, { status: 201 });
-  } catch (e) {
-    // 關鍵：把真正錯誤回傳給前端＋寫入 Functions logs
-    console.error("POST /api/orders error:", e);
-    return Response.json(
-      {
-        error: "SERVER_ERROR",
-        message: e?.message ?? String(e),
-        prismaCode: e?.code ?? null,
-        stack: process.env.NODE_ENV !== "production" ? e?.stack : undefined,
-      },
-      { status: 500 }
-    );
+    // ★ 只回 { id, orderNo } 給前端做導頁
+    return Response.json({ id: order.id, orderNo: order.orderNo }, { status: 201 });
+  } catch (err) {
+    console.error("POST /api/orders error:", err);
+    return new Response("SERVER_ERROR", { status: 500 });
   }
 }
