@@ -1,5 +1,4 @@
 "use client";
-import { BANK_INFO } from "../config/bank";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "../components/CartProvider";
@@ -221,19 +220,8 @@ export default function CheckoutForm() {
         {/* 付款方式 */}
 <section className="space-y-3">
   <h2 className="font-semibold text-lg">付款方式</h2>
-
-  <div className="rounded-md border p-3 bg-slate-50 space-y-1 text-sm">
-    <div>銀行：{BANK_INFO.bankName}（{BANK_INFO.bankCode}）</div>
-    <div className="flex items-center gap-2">
-      帳號：<span className="font-mono tracking-wider">{BANK_INFO.accountNumber}</span>
-      <button
-        type="button"
-        onClick={() => navigator.clipboard.writeText(BANK_INFO.accountNumber)}
-        className="px-2 py-0.5 rounded border text-xs"
-      >
-        複製
-      </button>
-    </div>
+  <div className="rounded-md border p-3 bg-slate-50 text-sm">
+    ATM 轉帳
   </div>
 </section>
 
@@ -259,7 +247,7 @@ export default function CheckoutForm() {
           disabled={loading || !items.length}
           className="w-full rounded-lg bg-black px-4 py-2 text-white disabled:opacity-50"
         >
-          {loading ? "送出中…" : "前往付款 - ATM 虛擬帳號"}
+          {loading ? "送出中…" : "前往付款"}
         </button>
       </form>
 
