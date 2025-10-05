@@ -1,7 +1,5 @@
-import { BANK_INFO } from "../config/bank";
-
 "use client";
-
+import { BANK_INFO } from "../config/bank";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "../components/CartProvider";
