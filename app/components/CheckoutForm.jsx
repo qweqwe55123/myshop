@@ -98,25 +98,26 @@ export default function CheckoutForm() {
         }),
       });
 
-let data;
-try {
-  data = await res.json(); // ✅ 只讀一次 JSON
-} catch {
-  data = {};
-}
+      // ====== 唯一修正區塊：只解析一次 JSON，並用同一份 data ======
+      let data;
+      try {
+        data = await res.json(); // ✅ 只讀一次
+      } catch {
+        data = {};
+      }
 
-if (!res.ok) {
-  setErr(data?.message || data?.error || `建立失敗（${res.status}）`);
-  return;
-}
+      if (!res.ok) {
+        setErr(data?.message || data?.error || `建立失敗（${res.status}）`);
+        return;
+      }
 
-try {
-  clearCart?.();
-} catch {}
+      try {
+        clearCart?.();
+      } catch {}
+      const { orderNo } = data; // ✅ 從同一份 data 取值
+      router.push(`/orders/${orderNo}`);
+      // ====== 修正區塊結束 ======
 
-      // ★ 用 orderNo || id 導頁，避免「找不到訂單」
-      const { orderNo } = await res.json();
-router.push(`/orders/${orderNo}`);
     } catch (e2) {
       setErr(String(e2?.message ?? e2));
     } finally {
@@ -191,7 +192,7 @@ router.push(`/orders/${orderNo}`);
             placeholder="例：7-ELEVEN 松福門市（935392）"
             className="w-full rounded-md border p-2"
           />
-          <p className="text-xs text-slate-500">請手動輸入門市名稱。</p>
+          <p className="text-xs text-slate-500">請輸入門市名稱。</p>
         </section>
 
         {/* 付款方式（僅顯示文字，不曝露帳號） */}
