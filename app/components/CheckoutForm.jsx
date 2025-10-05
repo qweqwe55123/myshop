@@ -1,3 +1,5 @@
+import { BANK_INFO } from "../config/bank";
+
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
@@ -215,17 +217,27 @@ export default function CheckoutForm() {
             className="w-full box-border rounded-md border p-2"
           />
           <p className="text-xs text-slate-500">
-            目前先手動輸入門市名稱/店號；之後再接綠界地圖自動帶入。
           </p>
         </section>
 
         {/* 付款方式 */}
-        <section className="space-y-3">
-          <h2 className="font-semibold text-lg">付款方式</h2>
-          <div className="rounded-md border p-3 bg-slate-50">
-            ATM 轉帳（下一步會顯示虛擬帳號與期限）
-          </div>
-        </section>
+<section className="space-y-3">
+  <h2 className="font-semibold text-lg">付款方式</h2>
+
+  <div className="rounded-md border p-3 bg-slate-50 space-y-1 text-sm">
+    <div>銀行：{BANK_INFO.bankName}（{BANK_INFO.bankCode}）</div>
+    <div className="flex items-center gap-2">
+      帳號：<span className="font-mono tracking-wider">{BANK_INFO.accountNumber}</span>
+      <button
+        type="button"
+        onClick={() => navigator.clipboard.writeText(BANK_INFO.accountNumber)}
+        className="px-2 py-0.5 rounded border text-xs"
+      >
+        複製
+      </button>
+    </div>
+  </div>
+</section>
 
         {/* 備註 */}
         <section className="space-y-2">
