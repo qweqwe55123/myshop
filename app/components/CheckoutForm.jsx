@@ -115,7 +115,7 @@ export default function CheckoutForm() {
         clearCart?.();
       } catch {}
       const { orderNo } = data; // ✅ 從同一份 data 取值
-      router.push(`/orders/${orderNo}`);
+      router.push(`/orders/${data?.orderNo}`);
       // ====== 修正區塊結束 ======
 
     } catch (e2) {
